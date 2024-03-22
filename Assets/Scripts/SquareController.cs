@@ -50,5 +50,11 @@ public class SquareController : MonoBehaviour
             Debug.Log("Win");
             LoadNextScene();
         }
+        if(collision.gameObject.tag.Equals("PinWheel"))
+        {
+            Debug.Log("xxxx");
+            Vector2 fistPosition = new Vector2(-6, 1);
+            transform.position = fistPosition;
+        }
     }
 }

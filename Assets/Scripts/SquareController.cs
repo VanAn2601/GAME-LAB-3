@@ -1,17 +1,24 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-
 public class SquareController : MonoBehaviour
 {
     // Start is called before the first frame update
     public float timeRemaining = 60;
     public Text countdownText;
+    public float moveSpeed = 5f;
+
+    // Start is called before the first frame update
+    public GameObject bulletPrefab;
+    public float bulletSpeed = 10f;
+
+    private Vector2 shootDirection;
     void Start()
     {
         StartCoroutine(Countdown());
+
     }
     IEnumerator Countdown()
     {
@@ -19,18 +26,44 @@ public class SquareController : MonoBehaviour
         {
             yield return new WaitForSeconds(1);
             timeRemaining--;
-            countdownText.text = "Time:" + timeRemaining. ToString();
+            countdownText.text = "Time: " + timeRemaining.ToString();
         }
         countdownText.text = "Time's up!";
+        SceneManager.LoadScene("Gameover");
     }
-
     // Update is called once per frame
     void Update()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        Vector3 movement = new Vector3(horizontal, vertical, 0f).normalized;
-        transform.Translate(movement * 5f * Time.deltaTime);
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            shootDirection = Vector2.left;
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            shootDirection = Vector2.right;
+        }
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            shootDirection = Vector2.up;
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            shootDirection = Vector2.down;
+        }
+        Vector3 moveDirection = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0);
+        transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
+
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, moveDirection, out hit, 1.0f))
+        {
+            Renderer renderer = hit.collider.GetComponent<Renderer>();
+
+            if (renderer != null && renderer.material.color == Color.black)
+            {
+                // Nếu nhân vật chạm vào vùng màu đen, ngăn nhân vật di chuyển
+                transform.Translate(-moveDirection * moveSpeed * Time.deltaTime);
+            }
+        }
     }
     public void LoadNextScene()
     {
@@ -41,18 +74,32 @@ public class SquareController : MonoBehaviour
     {
         if (collision.gameObject.tag.Equals("Circle"))
         {
-            Debug.Log("xxxx");
+
             Vector2 fistPosition = new Vector2(-6, 1);
             transform.position = fistPosition;
+
         }
         if (collision.gameObject.name.Equals("Box"))
         {
-            Debug.Log("Win");
+
             LoadNextScene();
+
         }
-        if(collision.gameObject.tag.Equals("PinWheel"))
+        if (collision.gameObject.tag.Equals("PinWheel"))
         {
-            Debug.Log("xxxx");
+
+            Vector2 fistPosition = new Vector2(-6, 1);
+            transform.position = fistPosition;
+
+        }
+    }
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+
+        if (collision.CompareTag("MapEdge")) // Kiểm tra xem collider khác có phải là viền bản đồ không
+        {
+            Debug.Log("xxxxxx");
+            // Dừng di chuyển của GameObject khi va chạm vào viền bản đồ
             Vector2 fistPosition = new Vector2(-6, 1);
             transform.position = fistPosition;
         }
